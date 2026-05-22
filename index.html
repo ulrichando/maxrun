@@ -1,12 +1,12 @@
 // Bash cmd are instruction that you type in the terminal to perform specific task 
-ls
-cd 
-pwd
-mkdire projects
-rm file.txt
-cat notes.md
-grep "error" log.txt
-code .
+ls // list the files and directories in the current directory
+cd // change directory
+touch file.txt // create a new file named file.txt
+mkdire projects // create a new directory named projects
+rm file.txt // remove the file named file.txt
+cat notes.md // display the contents of the file named notes.md
+grep "error" log.txt // search for the word "error" in the file named log.txt
+code . // open the current directory in Visual Studio Code
 
 
 // tells git who you are.
@@ -17,5 +17,14 @@ git config --global user.email "Your@example.com"
 //Repo means Repository  turn this folder into a git repository
 git init 
 
-
-git commit -m "Initial commit"
+// give me all git cmds
+git status // check the status of your git repository
+git add . // stage all changes for the next commit
+git commit -m "Your commit message" // commit the staged changes        
+git log // view the commit history
+git branch // list all branches in the repository
+git checkout -b new-feature // create and switch to a new branch named new-feature
+git merge new-feature // merge the new-feature branch into the current branch
+git remote add origin   
+// add a remote repository named origin
+git push -u origin main // push the changes to the remote repository on the main branch
