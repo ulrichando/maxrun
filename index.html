@@ -1,44 +1,84 @@
-// Bash cmd are instruction that you type in the terminal to perform specific task
-//this is just a test
-ls // list the files and directories in the current directory
-cd // change directory
-touch file.txt // create a new file named file.txt
-mkdire projects // create a new directory named projects
-rm file.txt // remove the file named file.txt
-cat notes.md // display the contents of the file named notes.md
-grep "error" log.txt // search for the word "error" in the file named log.txt
-code . // open the current directory in Visual Studio Code
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ulrich — Portfolio</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
 
+  <nav>
+    <div class="logo">Ulrich</div>
+    <ul>
+      <li><a href="#about">About</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
 
-// tells git who you are.
-git config --global user.name "Your Name"
-git config --global user.email "Your@example.com"
+  <section class="hero">
+    <div class="hero-content">
+      <p class="greeting">Hello, I'm</p>
+      <h1>Ulrich</h1>
+      <p class="tagline">Developer · Creator · Problem Solver</p>
+      <a href="#projects" class="btn">View My Work</a>
+    </div>
+    <div class="hero-blob"></div>
+  </section>
 
+  <section id="about">
+    <h2>About Me</h2>
+    <p>I'm a passionate developer who loves building clean, functional, and beautiful things on the web. Always learning, always creating.</p>
+  </section>
 
-//Repo means Repository  turn this folder into a git repository
-git init 
+  <section id="skills">
+    <h2>Skills</h2>
+    <div class="skills-grid">
+      <div class="skill-card">HTML</div>
+      <div class="skill-card">CSS</div>
+      <div class="skill-card">JavaScript</div>
+      <div class="skill-card">Python</div>
+      <div class="skill-card">Git</div>
+      <div class="skill-card">Computer Vision</div>
+    </div>
+  </section>
 
-// give me all git cmds
-git status // check the status of your git repository
-git add . // stage all changes for the next commit
-git commit -m "Your commit message" // commit the staged changes        
-git log // view the commit history
-git branch // list all branches in the repository
-git checkout -b new-feature // create and switch to a new branch named new-feature
-git merge new-feature // merge the new-feature branch into the current branch
-git remote add origin   
-// add a remote repository named origin
-git push -u origin main // push the changes to the remote repository on the main branch
+  <section id="projects">
+    <h2>Projects</h2>
+    <div class="projects-grid">
+      <div class="project-card">
+        <h3>Face Detection</h3>
+        <p>Real-time face detection using OpenCV and Python.</p>
+        <span class="tag">Python</span>
+        <span class="tag">OpenCV</span>
+      </div>
+      <div class="project-card">
+        <h3>Portfolio Site</h3>
+        <p>This very website — designed and built from scratch.</p>
+        <span class="tag">HTML</span>
+        <span class="tag">CSS</span>
+        <span class="tag">JS</span>
+      </div>
+      <div class="project-card">
+        <h3>More Coming</h3>
+        <p>Always working on something new. Stay tuned.</p>
+        <span class="tag">Soon</span>
+      </div>
+    </div>
+  </section>
 
+  <section id="contact">
+    <h2>Contact</h2>
+    <p>Want to work together or just say hi?</p>
+    <a href="mailto:ulrichando@users.noreply.github.com" class="btn">Get In Touch</a>
+  </section>
 
-//assignment 
+  <footer>
+    <p>© 2026 Ulrich. Built with passion.</p>
+  </footer>
 
-
-git clone repository url
-ls // list the files and directories in the current directory
-cd repository-name // change directory to the cloned repository
-code . // open the cloned repository in Visual Studio Code
-after typing your code you should always save your changes before committing them to git
-one i commit changes to github 
-pull // fetch and merge changes from the remote repository to your local repository
-
+  <script src="script.js"></script>
+</body>
+</html>
