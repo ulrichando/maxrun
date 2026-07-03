@@ -60,8 +60,42 @@ nav ul a {
   transition: color 0.2s;
 }
 
-nav ul a:hover {
+nav ul a:hover,
+nav ul a.active {
   color: var(--text);
+}
+
+/* Hamburger */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  z-index: 101;
+}
+
+.hamburger span {
+  display: block;
+  width: 26px;
+  height: 2px;
+  background: var(--text);
+  border-radius: 2px;
+  transition: transform 0.3s, opacity 0.3s;
+}
+
+.hamburger.open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.hamburger.open span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger.open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
 }
 
 /* HERO */
@@ -245,4 +279,42 @@ footer {
   color: var(--muted);
   font-size: 0.85rem;
   border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+/* RESPONSIVE NAV */
+@media (max-width: 768px) {
+  nav {
+    padding: 1rem 1.5rem;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+  nav .nav-links {
+    position: fixed;
+    inset: 0;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(15, 15, 19, 0.97);
+    backdrop-filter: blur(16px);
+    gap: 2.5rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+
+  nav .nav-links.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  nav .nav-links a {
+    font-size: 1.3rem;
+  }
+
+  section {
+    padding: 4rem 1.5rem;
+  }
 }
