@@ -3,14 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Ulrich — Creative Developer</title>
+  <title>Ulrich — Developer</title>
   <link rel="stylesheet" href="style.css" />
   <script type="importmap">
-  {
-    "imports": {
-      "three": "./vendor/three.module.js"
-    }
-  }
+  { "imports": { "three": "./vendor/three.module.js" } }
   </script>
 </head>
 <body>
@@ -18,73 +14,73 @@
   <canvas id="bg"></canvas>
 
   <nav>
-    <a href="#" class="logo">Ulrich</a>
+    <a href="#" class="logo">U.</a>
     <div class="nav-links">
       <a href="#about">About</a>
       <a href="#skills">Skills</a>
       <a href="#projects">Projects</a>
-      <a href="#contact">Contact</a>
+      <a href="#contact" class="nav-cta">Contact</a>
     </div>
   </nav>
 
   <main>
     <section class="hero">
       <div class="glass-card hero-card">
-        <p class="eyebrow">Hello, I'm</p>
+        <span class="eyebrow mono">Hello, I'm</span>
         <h1>Ulrich</h1>
-        <p class="subtitle">Developer &amp; Creative Technologist</p>
-        <p class="desc">I craft immersive digital experiences at the intersection of code and design.</p>
-        <a href="#projects" class="btn">Explore my work</a>
+        <p class="role">Developer & Creative Technologist</p>
+        <p class="desc">Building at the edge of code and design. I craft immersive, performant experiences that feel alive.</p>
+        <div class="hero-actions">
+          <a href="#projects" class="btn">View work</a>
+          <a href="#contact" class="btn btn-outline">Say hello</a>
+        </div>
       </div>
     </section>
 
     <section id="about">
-      <div class="glass-card about-card">
-        <span class="section-num">/01</span>
-        <h2>About</h2>
-        <p>I'm a full-stack developer with a deep curiosity for how things work. From computer vision to web technologies, I build software that's both functional and beautiful. Every line of code is a chance to create something that matters.</p>
+      <div class="glass-card">
+        <span class="section-tag mono">/ about</span>
+        <h2>Driven by curiosity</h2>
+        <p>Full-stack engineer with a focus on computer vision, web technologies, and interactive 3D. I thrive where technical depth meets creative expression — every project is a chance to push boundaries.</p>
         <div class="stats">
-          <div class="stat"><strong>5+</strong><span>Years coding</span></div>
+          <div class="stat"><strong>5+</strong><span>Years</span></div>
           <div class="stat"><strong>30+</strong><span>Projects</span></div>
-          <div class="stat"><strong>∞</strong><span>Curiosity</span></div>
+          <div class="stat"><strong>12</strong><span>Technologies</span></div>
         </div>
       </div>
     </section>
 
     <section id="skills">
-      <div class="glass-card skills-card">
-        <span class="section-num">/02</span>
-        <h2>Skills</h2>
+      <div class="glass-card">
+        <span class="section-tag mono">/ skills</span>
+        <h2>Tools & craft</h2>
         <div class="skill-chips">
           <span>HTML5 & CSS3</span><span>JavaScript</span><span>TypeScript</span>
           <span>React</span><span>Node.js</span><span>Python</span>
-          <span>OpenCV</span><span>Computer Vision</span><span>Git</span>
-          <span>Docker</span><span>System Design</span><span>UI/UX</span>
+          <span>OpenCV</span><span>Three.js</span><span>WebGL</span>
+          <span>Git</span><span>Docker</span><span>UI/UX</span>
         </div>
       </div>
     </section>
 
     <section id="projects">
-      <div class="projects-container">
-        <span class="section-num">/03</span>
-        <h2>Projects</h2>
-        <div class="project-cards">
-          <div class="glass-card project-card" data-project="0">
-            <div class="project-glow"></div>
+      <div class="projects-wrapper">
+        <span class="section-tag mono">/ projects</span>
+        <h2>Selected work</h2>
+        <div class="project-list">
+          <div class="glass-card project-card">
             <h3>Face Detection Engine</h3>
-            <p>Real-time detection with OpenCV & Python. 30+ FPS, high accuracy.</p>
+            <p>Real-time detection pipeline with OpenCV & Python. Processes 30+ FPS with high precision.</p>
             <div class="tags"><span>Python</span><span>OpenCV</span><span>NumPy</span></div>
           </div>
-          <div class="glass-card project-card" data-project="1">
-            <div class="project-glow"></div>
-            <h3>3D Portfolio</h3>
-            <p>This website — built with Three.js and vanilla web technologies.</p>
-            <div class="tags"><span>Three.js</span><span>WebGL</span><span>JS</span></div>
+          <div class="glass-card project-card">
+            <h3>3D Interactive Portfolio</h3>
+            <p>This website — custom WebGL with Three.js, custom shaders, and physics-driven interactions.</p>
+            <div class="tags"><span>Three.js</span><span>GLSL</span><span>JS</span></div>
           </div>
-          <div class="glass-card project-card" data-project="2">
-            <div class="project-glow"></div>
-            <h3>Dev Tooling Suite</h3>
-            <p>CLI productivity tools. Fast, composable, and open source.</p>
+          <div class="glass-card project-card">
+            <h3>Developer Tool Suite</h3>
+            <p>Fast, composable CLI productivity tools. Open source and well-documented.</p>
             <div class="tags"><span>Node.js</span><span>CLI</span><span>OSS</span></div>
           </div>
         </div>
@@ -93,14 +89,12 @@
 
     <section id="contact">
       <div class="glass-card contact-card">
-        <span class="section-num">/04</span>
+        <span class="section-tag mono">/ contact</span>
         <h2>Let's build something</h2>
-        <p>Open to collaborations, freelance work, and interesting conversations.</p>
+        <p>Open to collaborations, freelance, and interesting conversations.</p>
         <a href="mailto:ulrichando@users.noreply.github.com" class="btn">Get in touch</a>
       </div>
-      <footer>
-        <p>&copy; 2026 Ulrich. Built with Three.js</p>
-      </footer>
+      <footer>&copy; 2026 Ulrich</footer>
     </section>
   </main>
 
