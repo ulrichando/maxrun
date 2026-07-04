@@ -3,85 +3,199 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Ulrich — Portfolio</title>
+  <title>Ulrich — Developer & Creator</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
+  <div class="cursor-glow"></div>
+  <canvas id="starfield"></canvas>
+
   <nav>
-    <div class="logo">Ulrich</div>
+    <a href="#" class="logo">U.</a>
     <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
-      <span></span>
-      <span></span>
-      <span></span>
+      <span></span><span></span>
     </button>
-    <ul class="nav-links">
-      <li><a href="#about">About</a></li>
-      <li><a href="#skills">Skills</a></li>
-      <li><a href="#projects">Projects</a></li>
-      <li><a href="#contact">Contact</a></li>
-    </ul>
+    <div class="nav-overlay">
+      <ul class="nav-links">
+        <li><a href="#about">About</a></li>
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+    <div class="nav-indicator">
+      <span class="dot active" data-section="hero"></span>
+      <span class="dot" data-section="about"></span>
+      <span class="dot" data-section="skills"></span>
+      <span class="dot" data-section="projects"></span>
+      <span class="dot" data-section="contact"></span>
+    </div>
   </nav>
 
-  <section class="hero">
-    <div class="hero-content">
-      <p class="greeting">Hello, I'm</p>
-      <h1>Ulrich</h1>
-      <p class="tagline">Developer · Creator · Problem Solver</p>
-      <a href="#projects" class="btn">View My Work</a>
+  <section class="hero" id="hero">
+    <div class="hero-grid">
+      <div class="hero-text">
+        <p class="hero-eyebrow">Hello, I'm</p>
+        <h1>
+          <span class="name-line">Ulrich</span>
+          <span class="role-line">I build things<br>for the web</span>
+        </h1>
+        <p class="hero-desc">Full-stack developer focused on crafting clean, performant, and beautiful digital experiences.</p>
+        <div class="hero-cta">
+          <a href="#projects" class="btn btn-primary">
+            View my work
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a href="#contact" class="btn btn-ghost">Get in touch</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-orb"></div>
+        <div class="hero-ring"></div>
+        <div class="hero-ring ring-2"></div>
+      </div>
     </div>
-    <div class="hero-blob"></div>
+    <div class="scroll-hint">
+      <span>Scroll</span>
+      <div class="scroll-line"></div>
+    </div>
   </section>
 
   <section id="about">
-    <h2>About Me</h2>
-    <p>I'm a passionate developer who loves building clean, functional, and beautiful things on the web. Always learning, always creating.</p>
+    <div class="section-label">01</div>
+    <h2 class="section-title">About Me</h2>
+    <div class="about-grid">
+      <p class="about-lead">I'm a developer who believes great software starts with empathy — for the user, for the maintainer, and for the craft itself.</p>
+      <div class="about-details">
+        <p>With a foundation in web technologies and a passion for computer vision, I bridge the gap between creative design and engineering rigor. Every project is an opportunity to learn, to ship, and to make something that matters.</p>
+        <div class="about-stats">
+          <div class="stat">
+            <span class="stat-number" data-target="5">0</span>
+            <span class="stat-label">Years coding</span>
+          </div>
+          <div class="stat">
+            <span class="stat-number" data-target="30">0</span>
+            <span class="stat-label">Projects shipped</span>
+          </div>
+          <div class="stat">
+            <span class="stat-number" data-target="10">0</span>
+            <span class="stat-label">Technologies</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 
   <section id="skills">
-    <h2>Skills</h2>
+    <div class="section-label">02</div>
+    <h2 class="section-title">Skills</h2>
+    <div class="skills-marquee">
+      <div class="marquee-track">
+        <span>HTML5</span><span class="dot-sep"></span>
+        <span>CSS3 / Sass</span><span class="dot-sep"></span>
+        <span>JavaScript</span><span class="dot-sep"></span>
+        <span>TypeScript</span><span class="dot-sep"></span>
+        <span>React</span><span class="dot-sep"></span>
+        <span>Node.js</span><span class="dot-sep"></span>
+        <span>Python</span><span class="dot-sep"></span>
+        <span>OpenCV</span><span class="dot-sep"></span>
+        <span>Git</span><span class="dot-sep"></span>
+        <span>Docker</span><span class="dot-sep"></span>
+        <!-- duplicated for seamless loop -->
+        <span>HTML5</span><span class="dot-sep"></span>
+        <span>CSS3 / Sass</span><span class="dot-sep"></span>
+        <span>JavaScript</span><span class="dot-sep"></span>
+        <span>TypeScript</span><span class="dot-sep"></span>
+        <span>React</span><span class="dot-sep"></span>
+        <span>Node.js</span><span class="dot-sep"></span>
+        <span>Python</span><span class="dot-sep"></span>
+        <span>OpenCV</span><span class="dot-sep"></span>
+        <span>Git</span><span class="dot-sep"></span>
+        <span>Docker</span>
+      </div>
+    </div>
     <div class="skills-grid">
-      <div class="skill-card">HTML</div>
-      <div class="skill-card">CSS</div>
-      <div class="skill-card">JavaScript</div>
-      <div class="skill-card">Python</div>
-      <div class="skill-card">Git</div>
-      <div class="skill-card">Computer Vision</div>
+      <div class="skill-card"><span class="skill-icon">&#9670;</span><span>Frontend</span></div>
+      <div class="skill-card"><span class="skill-icon">&#9636;</span><span>Backend</span></div>
+      <div class="skill-card"><span class="skill-icon">&#9729;</span><span>Cloud</span></div>
+      <div class="skill-card"><span class="skill-icon">&#9881;</span><span>DevOps</span></div>
+      <div class="skill-card"><span class="skill-icon">&#9733;</span><span>Computer Vision</span></div>
+      <div class="skill-card"><span class="skill-icon">&#9776;</span><span>System Design</span></div>
     </div>
   </section>
 
   <section id="projects">
-    <h2>Projects</h2>
-    <div class="projects-grid">
-      <div class="project-card">
-        <h3>Face Detection</h3>
-        <p>Real-time face detection using OpenCV and Python.</p>
-        <span class="tag">Python</span>
-        <span class="tag">OpenCV</span>
+    <div class="section-label">03</div>
+    <h2 class="section-title">Projects</h2>
+    <div class="bento-grid">
+      <div class="bento-card featured">
+        <div class="bento-content">
+          <span class="bento-tag">Featured</span>
+          <h3>Face Detection</h3>
+          <p>Real-time face detection engine built with OpenCV and Python. Processes 30+ FPS with high accuracy.</p>
+          <div class="bento-tech">
+            <span>Python</span><span>OpenCV</span><span>NumPy</span>
+          </div>
+        </div>
+        <div class="bento-glow"></div>
       </div>
-      <div class="project-card">
-        <h3>Portfolio Site</h3>
-        <p>This very website — designed and built from scratch.</p>
-        <span class="tag">HTML</span>
-        <span class="tag">CSS</span>
-        <span class="tag">JS</span>
+      <div class="bento-card">
+        <div class="bento-content">
+          <h3>Portfolio Site</h3>
+          <p>This very website — designed and engineered from scratch with vanilla web technologies.</p>
+          <div class="bento-tech">
+            <span>HTML</span><span>CSS</span><span>JS</span>
+          </div>
+        </div>
       </div>
-      <div class="project-card">
-        <h3>More Coming</h3>
-        <p>Always working on something new. Stay tuned.</p>
-        <span class="tag">Soon</span>
+      <div class="bento-card">
+        <div class="bento-content">
+          <h3>CLI Tools</h3>
+          <p>A collection of developer productivity tools for the terminal. Fast, composable, and well-documented.</p>
+          <div class="bento-tech">
+            <span>Python</span><span>Bash</span>
+          </div>
+        </div>
+      </div>
+      <div class="bento-card">
+        <div class="bento-content">
+          <h3>API Service</h3>
+          <p>RESTful API with authentication, rate-limiting, and comprehensive documentation.</p>
+          <div class="bento-tech">
+            <span>Node.js</span><span>PostgreSQL</span>
+          </div>
+        </div>
+      </div>
+      <div class="bento-card empty-state">
+        <div class="bento-content">
+          <h3>Building something new</h3>
+          <p>Always experimenting. The next project is already in the works.</p>
+          <span class="bento-cta">Coming soon &rarr;</span>
+        </div>
+        <div class="bento-particle"></div>
       </div>
     </div>
   </section>
 
   <section id="contact">
-    <h2>Contact</h2>
-    <p>Want to work together or just say hi?</p>
-    <a href="mailto:ulrichando@users.noreply.github.com" class="btn">Get In Touch</a>
+    <div class="section-label">04</div>
+    <h2 class="section-title">Let's talk</h2>
+    <p class="contact-lead">Have a project in mind or just want to connect? I'm always open to interesting conversations.</p>
+    <a href="mailto:ulrichando@users.noreply.github.com" class="btn btn-primary">
+      Send a message
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
   </section>
 
   <footer>
-    <p>© 2026 Ulrich. Built with passion.</p>
+    <div class="footer-content">
+      <a href="#" class="footer-logo">U.</a>
+      <p>Crafted with care &copy; 2026</p>
+      <div class="footer-links">
+        <a href="https://github.com/ulrichando" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </div>
   </footer>
 
   <script src="script.js"></script>
