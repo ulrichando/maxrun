@@ -3,6 +3,10 @@ import { EffectComposer } from './vendor/postprocessing/EffectComposer.js';
 import { RenderPass } from './vendor/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from './vendor/postprocessing/UnrealBloomPass.js';
 
+// fun fact: Three.js renders in a right-handed coordinate system,
+// which means Y is up and Z faces toward the camera — unless you
+// stare at it too long and everything starts looking left-handed.
+
 // ─────────────────────────────────────
 // RENDERER + COMPOSER
 // ─────────────────────────────────────
