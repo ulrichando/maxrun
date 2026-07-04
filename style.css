@@ -5,9 +5,9 @@
 }
 
 :root {
-  --glass-bg: rgba(15, 15, 30, 0.55);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-hover: rgba(20, 20, 40, 0.7);
+  --glass-bg: rgba(8, 8, 20, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-hover: rgba(12, 12, 30, 0.75);
   --accent: #a78bfa;
   --accent2: #22d3ee;
   --accent3: #f472b6;
@@ -18,11 +18,11 @@
 
 html {
   scroll-behavior: smooth;
-  background: #050510;
+  background: #030308;
 }
 
 body {
-  background: #050510;
+  background: transparent;
   color: var(--text);
   font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
   line-height: 1.6;
@@ -42,7 +42,7 @@ body {
   z-index: 0;
 }
 
-/* Nav */
+/* ── NAV ── */
 nav {
   position: fixed;
   top: 0;
@@ -54,7 +54,6 @@ nav {
   z-index: 100;
   pointer-events: none;
 }
-
 nav > * {
   pointer-events: auto;
 }
@@ -71,349 +70,307 @@ nav > * {
   display: flex;
   gap: 2rem;
 }
-
 .nav-links a {
   color: var(--text-dim);
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 500;
   transition: color 0.3s;
 }
-
 .nav-links a:hover {
   color: #fff;
 }
 
-/* Main scroll container */
+/* ── MAIN ── */
 main {
   position: relative;
   z-index: 1;
   pointer-events: none;
 }
-
 main > * {
   pointer-events: auto;
 }
 
-/* Sections */
+/* ── SECTIONS ── */
 section {
   min-height: 100vh;
   display: flex;
   align-items: center;
-  padding: 4rem 3rem;
-  position: relative;
+  padding: 5rem 3rem;
 }
 
-/* Glass card */
+/* ── GLASS CARD ── */
 .glass-card {
   background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border: 1px solid var(--glass-border);
-  border-radius: 24px;
-  padding: 3rem;
-  transition: background 0.4s, border-color 0.4s, transform 0.4s;
+  border-radius: 20px;
+  padding: 2.5rem;
+  transition: background 0.5s, border-color 0.5s, transform 0.4s;
   position: relative;
   overflow: hidden;
 }
-
 .glass-card:hover {
   background: var(--glass-hover);
-  border-color: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .section-num {
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--accent2);
   letter-spacing: 0.12em;
-  text-transform: uppercase;
+  opacity: 0.7;
 }
 
-/* Hero */
+/* ── HERO ── */
 .hero {
   justify-content: flex-start;
-  padding-top: 8rem;
+  padding-top: 7rem;
 }
-
 .hero-card {
-  max-width: 600px;
+  max-width: 560px;
 }
-
 .hero-card .eyebrow {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  font-size: 0.8rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
   color: var(--accent2);
   text-transform: uppercase;
   letter-spacing: 0.15em;
   margin-bottom: 1rem;
 }
-
 .hero-card h1 {
-  font-size: clamp(4rem, 8vw, 7rem);
+  font-size: clamp(3.5rem, 7vw, 6.5rem);
   font-weight: 800;
   letter-spacing: -0.04em;
   line-height: 1;
-  margin-bottom: 1rem;
-  background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+  margin-bottom: 0.75rem;
+  background: linear-gradient(135deg, #fff 20%, var(--accent) 90%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-
 .hero-card .subtitle {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   color: var(--text-dim);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.3rem;
+  font-weight: 500;
 }
-
 .hero-card .desc {
   color: var(--text-muted);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   margin-bottom: 2rem;
-  max-width: 420px;
 }
-
 .btn {
   display: inline-block;
-  padding: 0.8rem 2rem;
+  padding: 0.75rem 1.8rem;
   background: linear-gradient(135deg, var(--accent), var(--accent3));
   color: #fff;
   text-decoration: none;
   border-radius: 50px;
   font-weight: 600;
-  font-size: 0.9rem;
-  transition: transform 0.25s, box-shadow 0.25s;
-  box-shadow: 0 4px 24px rgba(167, 139, 250, 0.25);
+  font-size: 0.85rem;
+  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 4px 20px rgba(167, 139, 250, 0.2);
 }
-
 .btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(167, 139, 250, 0.4);
+  box-shadow: 0 8px 30px rgba(167, 139, 250, 0.35);
 }
 
-/* About */
+/* ── ABOUT ── */
 #about {
   justify-content: flex-end;
 }
-
 .about-card {
-  max-width: 520px;
+  max-width: 480px;
 }
-
 .about-card h2 {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   font-weight: 700;
   letter-spacing: -0.03em;
-  margin: 0.5rem 0 1.25rem;
+  margin: 0.3rem 0 1rem;
 }
-
 .about-card p {
   color: var(--text-dim);
-  font-size: 1rem;
-  line-height: 1.75;
-  margin-bottom: 2rem;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
 }
-
 .stats {
   display: flex;
   gap: 2rem;
 }
-
 .stat {
   text-align: center;
 }
-
 .stat strong {
   display: block;
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   font-weight: 800;
   background: linear-gradient(135deg, var(--accent), var(--accent2));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-
 .stat span {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
 }
 
-/* Skills */
+/* ── SKILLS ── */
 #skills {
   justify-content: flex-start;
 }
-
 .skills-card {
-  max-width: 560px;
+  max-width: 520px;
 }
-
 .skills-card h2 {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   font-weight: 700;
   letter-spacing: -0.03em;
-  margin: 0.5rem 0 1.5rem;
+  margin: 0.3rem 0 1.25rem;
 }
-
 .skill-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.6rem;
+  gap: 0.5rem;
 }
-
 .skill-chips span {
-  padding: 0.5rem 1.1rem;
+  padding: 0.45rem 1rem;
   border-radius: 50px;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 500;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   color: var(--text-dim);
   transition: border-color 0.3s, background 0.3s, color 0.3s;
   cursor: default;
 }
-
 .skill-chips span:hover {
-  border-color: rgba(167, 139, 250, 0.4);
-  background: rgba(167, 139, 250, 0.1);
+  border-color: rgba(167, 139, 250, 0.35);
+  background: rgba(167, 139, 250, 0.08);
   color: #fff;
 }
 
-/* Projects */
+/* ── PROJECTS ── */
 #projects {
-  justify-content: flex-end;
   flex-direction: column;
   align-items: flex-end;
+  justify-content: center;
 }
-
 .projects-container {
   width: 100%;
-  max-width: 700px;
+  max-width: 600px;
 }
-
 .projects-container h2 {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   font-weight: 700;
   letter-spacing: -0.03em;
-  margin: 0.5rem 0 2rem;
+  margin: 0.3rem 0 1.5rem;
 }
-
 .project-cards {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
 }
-
 .project-card {
-  padding: 2rem;
+  padding: 1.75rem 2rem;
   cursor: pointer;
 }
-
 .project-card h3 {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 700;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
 }
-
 .project-card p {
   color: var(--text-dim);
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
 }
-
 .project-card .tags {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.4rem;
   flex-wrap: wrap;
 }
-
 .project-card .tags span {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  font-size: 0.7rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
   color: var(--accent2);
-  background: rgba(34, 211, 238, 0.08);
-  padding: 0.2rem 0.6rem;
-  border-radius: 6px;
+  background: rgba(34, 211, 238, 0.07);
+  padding: 0.15rem 0.5rem;
+  border-radius: 5px;
 }
-
 .project-glow {
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 150px;
-  height: 150px;
-  background: radial-gradient(circle, rgba(167, 139, 250, 0.08) 0%, transparent 70%);
+  top: -20%;
+  right: -10%;
+  width: 160px;
+  height: 160px;
+  background: radial-gradient(circle, rgba(167, 139, 250, 0.1) 0%, transparent 70%);
   pointer-events: none;
-  transition: opacity 0.3s;
   opacity: 0;
+  transition: opacity 0.4s;
 }
-
 .project-card:hover .project-glow {
   opacity: 1;
 }
 
-/* Contact */
+/* ── CONTACT ── */
 #contact {
-  justify-content: center;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
-  gap: 3rem;
+  gap: 2.5rem;
 }
-
 .contact-card {
-  max-width: 500px;
+  max-width: 460px;
   text-align: center;
 }
-
 .contact-card h2 {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   font-weight: 700;
   letter-spacing: -0.03em;
-  margin: 0.5rem 0 1rem;
+  margin: 0.3rem 0 0.75rem;
 }
-
 .contact-card p {
   color: var(--text-dim);
-  margin-bottom: 2rem;
+  font-size: 0.95rem;
+  margin-bottom: 1.75rem;
 }
-
 footer {
   color: var(--text-muted);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
 }
 
-/* Responsive */
+/* ── RESPONSIVE ── */
 @media (max-width: 768px) {
   nav {
     padding: 1rem 1.25rem;
   }
-
   .nav-links {
-    gap: 1.25rem;
+    gap: 1rem;
   }
-
   .nav-links a {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
   }
-
   section {
     padding: 3rem 1.25rem;
   }
-
   .glass-card {
-    padding: 2rem 1.5rem;
+    padding: 1.75rem 1.25rem;
   }
-
-  #about {
+  #about, #projects {
     justify-content: center;
-  }
-
-  #projects {
     align-items: center;
   }
-
   .hero-card h1 {
-    font-size: 3.5rem;
+    font-size: 3rem;
+  }
+  .about-card h2, .skills-card h2, .projects-container h2, .contact-card h2 {
+    font-size: 1.8rem;
   }
 }
