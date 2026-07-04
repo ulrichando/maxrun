@@ -1,196 +1,276 @@
 import * as THREE from 'three';
 import { EffectComposer } from './vendor/postprocessing/EffectComposer.js';
 import { RenderPass } from './vendor/postprocessing/RenderPass.js';
+import { ShaderPass } from './vendor/postprocessing/ShaderPass.js';
 import { UnrealBloomPass } from './vendor/postprocessing/UnrealBloomPass.js';
+import { PhysicsWorld } from './vendor/Physics.js';
+import { CosmicFieldShader, ShimmerShader, EnergyRingShader } from './vendor/shaders/CustomShaders.js';
 
-// ─────────────────────────────────────
-// RENDERER + COMPOSER
-// ─────────────────────────────────────
+// ═══════════════════════════════════════
+// RENDERER SETUP
+// ═══════════════════════════════════════
 const canvas = document.getElementById('bg');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.0;
+renderer.toneMappingExposure = 1.15;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x030308);
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(0, 1.5, 12);
 
-const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 80);
-camera.position.set(0, 2, 10);
+// ═══════════════════════════════════════
+// CUSTOM COSMIC BACKGROUND SHADER
+// ═══════════════════════════════════════
+const cosmicBg = new ShaderPass(CosmicFieldShader);
+cosmicBg.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+cosmicBg.uniforms.uMouse.value.set(0, 0);
 
-// Post-processing
+// ═══════════════════════════════════════
+// POST-PROCESSING STACK
+// ═══════════════════════════════════════
 const composer = new EffectComposer(renderer);
-composer.addPass(new RenderPass(scene, camera));
 
+// 1. Background shader pass
+composer.addPass(cosmicBg);
+
+// 2. Render the 3D scene on top
+const renderPass = new RenderPass(scene, camera);
+renderPass.clear = false;
+composer.addPass(renderPass);
+
+// 3. Bloom
 const bloomPass = new UnrealBloomPass(
   new THREE.Vector2(window.innerWidth, window.innerHeight),
-  1.2,   // strength
-  0.4,   // radius
-  0.1    // threshold
+  0.9,   // strength
+  0.5,   // radius
+  0.15   // threshold
 );
 composer.addPass(bloomPass);
 
-// ─────────────────────────────────────
+// 4. Custom grain + vignette + chromatic aberration pass
+const PostFXShader = {
+  uniforms: {
+    tDiffuse: { value: null },
+    uTime: { value: 0 },
+    uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+    uIntensity: { value: 0.0 },
+  },
+  vertexShader: /* glsl */ `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: /* glsl */ `
+    varying vec2 vUv;
+    uniform sampler2D tDiffuse;
+    uniform float uTime;
+    uniform vec2 uResolution;
+    uniform float uIntensity;
+
+    float hash(vec2 p) {
+      return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+    }
+
+    void main() {
+      vec2 uv = vUv;
+
+      // Chromatic aberration (subtle, intensity-driven)
+      float chroma = uIntensity * 1.5;
+      float r = texture2D(tDiffuse, uv + vec2(chroma * 0.003, 0.0)).r;
+      float g = texture2D(tDiffuse, uv).g;
+      float b = texture2D(tDiffuse, uv - vec2(chroma * 0.003, 0.0)).b;
+      vec3 color = vec3(r, g, b);
+
+      // Vignette
+      vec2 centered = uv - 0.5;
+      float vignette = 1.0 - dot(centered, centered) * 1.3;
+      vignette = smoothstep(0.0, 0.85, vignette);
+
+      // Film grain
+      float grain = hash(uv + fract(uTime * 0.01)) * 0.04;
+
+      color *= vignette;
+      color += grain;
+
+      gl_FragColor = vec4(color, 1.0);
+    }
+  `,
+};
+
+const postFX = new ShaderPass(PostFXShader);
+composer.addPass(postFX);
+
+// ═══════════════════════════════════════
 // LIGHTING
-// ─────────────────────────────────────
-scene.add(new THREE.AmbientLight(0x1a1a3a, 0.5));
+// ═══════════════════════════════════════
+scene.add(new THREE.AmbientLight(0x181830, 0.6));
 
-const keyLight = new THREE.PointLight(0x9966ff, 70, 30);
-keyLight.position.set(-5, 3, 5);
-scene.add(keyLight);
+const lights = [
+  { color: 0x9966ff, intensity: 60, pos: [-6, 3, 6] },
+  { color: 0x44ccff, intensity: 45, pos: [5, -2, 4] },
+  { color: 0xff5577, intensity: 30, pos: [3, 5, -5] },
+  { color: 0xffffff, intensity: 15, pos: [0, 6, 2] },
+  { color: 0xffaa44, intensity: 25, pos: [-4, -3, -3] },
+];
 
-const fillLight = new THREE.PointLight(0x44ccff, 50, 25);
-fillLight.position.set(5, -1, 3);
-scene.add(fillLight);
-
-const rimLight = new THREE.PointLight(0xff5599, 35, 20);
-rimLight.position.set(2, 4, -5);
-scene.add(rimLight);
-
-const topLight = new THREE.PointLight(0xffffff, 20, 20);
-topLight.position.set(0, 7, 0);
-scene.add(topLight);
-
-// ─────────────────────────────────────
-// CENTRAL GEOMETRY — CRYSTAL CORE
-// ─────────────────────────────────────
-
-// Inner glowing icosahedron
-const coreGeo = new THREE.IcosahedronGeometry(0.8, 1);
-const coreMat = new THREE.MeshStandardMaterial({
-  color: 0xbb99ff,
-  emissive: 0x5533aa,
-  emissiveIntensity: 0.8,
-  metalness: 0.2,
-  roughness: 0.15,
+lights.forEach(l => {
+  const light = new THREE.PointLight(l.color, l.intensity, 28);
+  light.position.set(...l.pos);
+  scene.add(light);
 });
-const core = new THREE.Mesh(coreGeo, coreMat);
-scene.add(core);
 
-// Wireframe dodecahedron shell
-const shellGeo = new THREE.DodecahedronGeometry(1.5, 0);
-const shellMat = new THREE.MeshBasicMaterial({
+// ═══════════════════════════════════════
+// PHYSICS WORLD
+// ═══════════════════════════════════════
+const physics = new PhysicsWorld();
+
+// ═══════════════════════════════════════
+// CENTRAL MORPHING GEOMETRY
+// ═══════════════════════════════════════
+const morphGroup = new THREE.Group();
+scene.add(morphGroup);
+
+// We'll use a torus knot as the base and morph parameters
+const baseGeo = new THREE.TorusKnotGeometry(1.3, 0.28, 200, 32, 3, 4);
+const shimmerMat = new THREE.ShaderMaterial({
+  ...ShimmerShader,
+  lights: true,
+});
+shimmerMat.uniforms.uColor.value.set(0x8866ee);
+const mainMesh = new THREE.Mesh(baseGeo, shimmerMat);
+morphGroup.add(mainMesh);
+
+// Wireframe overlay
+const wireGeo = new THREE.TorusKnotGeometry(1.38, 0.01, 200, 32, 3, 4);
+const wireMat = new THREE.MeshBasicMaterial({
   color: 0xa78bfa,
   wireframe: true,
   transparent: true,
-  opacity: 0.6,
+  opacity: 0.4,
 });
-const shell = new THREE.Mesh(shellGeo, shellMat);
-scene.add(shell);
+const wireOverlay = new THREE.Mesh(wireGeo, wireMat);
+morphGroup.add(wireOverlay);
 
-// Larger outer wireframe
-const outerGeo = new THREE.IcosahedronGeometry(2.2, 2);
-const outerMat = new THREE.MeshBasicMaterial({
-  color: 0x6699ff,
-  wireframe: true,
-  transparent: true,
-  opacity: 0.25,
-});
-const outerShell = new THREE.Mesh(outerGeo, outerMat);
-scene.add(outerShell);
-
-// Torus ring around the core
-const ringGeo = new THREE.TorusGeometry(1.9, 0.02, 32, 120);
-const ringMat = new THREE.MeshStandardMaterial({
-  color: 0x22d3ee,
-  emissive: 0x22d3ee,
-  emissiveIntensity: 1.5,
-  metalness: 0.1,
-  roughness: 0.3,
-});
-const ring = new THREE.Mesh(ringGeo, ringMat);
-ring.rotation.x = Math.PI * 0.55;
-scene.add(ring);
-
-// Second ring
-const ring2Geo = new THREE.TorusGeometry(2.1, 0.015, 32, 100);
-const ring2Mat = new THREE.MeshStandardMaterial({
-  color: 0xf472b6,
-  emissive: 0xf472b6,
-  emissiveIntensity: 1.2,
-  metalness: 0.1,
-  roughness: 0.3,
-});
-const ring2 = new THREE.Mesh(ring2Geo, ring2Mat);
-ring2.rotation.x = Math.PI * 0.35;
-ring2.rotation.y = Math.PI * 0.3;
-scene.add(ring2);
-
-// ─────────────────────────────────────
-// ORBITING GLOW SPHERES
-// ─────────────────────────────────────
-const orbitGroup = new THREE.Group();
-scene.add(orbitGroup);
-
-const orbData = [];
-const orbGeo = new THREE.SphereGeometry(0.08, 24, 24);
-
-const orbConfigs = [
-  { color: 0xfbbf24, emissive: 0xffaa00, radius: 2.8, speed: 0.4, tilt: 0.25, phase: 0 },
-  { color: 0x22d3ee, emissive: 0x00ccff, radius: 3.3, speed: -0.35, tilt: 0.7, phase: 1.5 },
-  { color: 0xf472b6, emissive: 0xff3388, radius: 3.0, speed: 0.45, tilt: -0.5, phase: 3.0 },
-  { color: 0xa78bfa, emissive: 0x8844ff, radius: 3.6, speed: -0.3, tilt: 0.9, phase: 5.0 },
-  { color: 0xffffff, emissive: 0xffffff, radius: 2.5, speed: 0.5, tilt: 0.15, phase: 1.0 },
-  { color: 0x34d399, emissive: 0x00cc77, radius: 3.4, speed: -0.38, tilt: -0.6, phase: 4.0 },
-  { color: 0xff8888, emissive: 0xff4444, radius: 3.1, speed: 0.33, tilt: 0.55, phase: 2.2 },
-  { color: 0x88aaff, emissive: 0x3366ff, radius: 3.7, speed: -0.28, tilt: -0.8, phase: 5.8 },
+// ═══════════════════════════════════════
+// ENERGY RINGS (3 layers)
+// ═══════════════════════════════════════
+const rings = [];
+const ringConfigs = [
+  { radius: 1.8, tube: 0.015, rotX: Math.PI * 0.5, speed: 0.3, color: 0x22d3ee },
+  { radius: 2.2, tube: 0.012, rotX: Math.PI * 0.35, speed: -0.25, color: 0xf472b6 },
+  { radius: 2.0, tube: 0.018, rotX: Math.PI * 0.6, speed: 0.2, color: 0xa78bfa },
 ];
 
-orbConfigs.forEach(cfg => {
-  const mat = new THREE.MeshStandardMaterial({
-    color: cfg.color,
-    emissive: cfg.emissive,
-    emissiveIntensity: 2.5,
-    metalness: 0.0,
-    roughness: 0.2,
+ringConfigs.forEach(cfg => {
+  const geo = new THREE.TorusGeometry(cfg.radius, cfg.tube, 16, 128);
+  const mat = new THREE.ShaderMaterial({
+    ...EnergyRingShader,
   });
-  const orb = new THREE.Mesh(orbGeo, mat);
-  orb.userData = cfg;
-  orbitGroup.add(orb);
-  orbData.push(orb);
+  mat.uniforms.uColor.value.set(cfg.color);
+  const ring = new THREE.Mesh(geo, mat);
+  ring.rotation.x = cfg.rotX;
+  ring.userData = { speed: cfg.speed };
+  morphGroup.add(ring);
+  rings.push(ring);
 });
 
-// ─────────────────────────────────────
-// NEBULA PARTICLES
-// ─────────────────────────────────────
-const particleCount = window.innerWidth < 768 ? 4000 : 8000;
-const pGeo = new THREE.BufferGeometry();
-const pPositions = new Float32Array(particleCount * 3);
-const pColors = new Float32Array(particleCount * 3);
+// ═══════════════════════════════════════
+// PHYSICS-BASED FLOATING CRYSTALS
+// ═══════════════════════════════════════
+const crystals = [];
+const crystalShapes = [
+  () => new THREE.OctahedronGeometry(0.1 + Math.random() * 0.12, 0),
+  () => new THREE.IcosahedronGeometry(0.08 + Math.random() * 0.1, 0),
+  () => new THREE.TetrahedronGeometry(0.09 + Math.random() * 0.11, 0),
+  () => new THREE.DodecahedronGeometry(0.07 + Math.random() * 0.09, 0),
+];
 
-const color1 = new THREE.Color(0x9966ff);  // purple
-const color2 = new THREE.Color(0x44aaff);  // blue
-const color3 = new THREE.Color(0xff6699);  // pink
-const color4 = new THREE.Color(0xffffff);  // white
+for (let i = 0; i < 24; i++) {
+  const shapeFn = crystalShapes[Math.floor(Math.random() * crystalShapes.length)];
+  const geo = shapeFn();
+  const hue = 0.6 + Math.random() * 0.25;
+  const col = new THREE.Color().setHSL(hue, 0.7, 0.45 + Math.random() * 0.35);
+  const mat = new THREE.MeshStandardMaterial({
+    color: col,
+    emissive: col,
+    emissiveIntensity: 1.2,
+    metalness: 0.2,
+    roughness: 0.22,
+  });
+  const crystal = new THREE.Mesh(geo, mat);
 
-for (let i = 0; i < particleCount; i++) {
-  const t = Math.random();
-  const r = 2.5 + t * 7;
-  const angle = t * Math.PI * 6 + Math.random() * 0.4;
-  const h = (Math.random() - 0.5) * 5 * (1 - t * 0.5);
+  // Distribute around the central geometry
+  const theta = Math.random() * Math.PI * 2;
+  const phi = Math.random() * Math.PI * 0.7;
+  const r = 2.0 + Math.random() * 3.5;
+  crystal.position.set(
+    Math.cos(theta) * Math.cos(phi) * r,
+    Math.sin(phi) * r * 0.8 + (Math.random() - 0.5) * 2,
+    Math.sin(theta) * Math.cos(phi) * r
+  );
+  crystal.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+  crystal.userData = {
+    rotSpeed: new THREE.Vector3(
+      (Math.random() - 0.5) * 0.8,
+      (Math.random() - 0.5) * 0.8,
+      (Math.random() - 0.5) * 0.8,
+    ),
+  };
 
-  pPositions[i * 3] = Math.cos(angle) * r + (Math.random() - 0.5) * 1.2;
-  pPositions[i * 3 + 1] = h;
-  pPositions[i * 3 + 2] = Math.sin(angle) * r + (Math.random() - 0.5) * 1.2;
-
-  let c;
-  if (t < 0.25) c = color2.clone().lerp(color1, t / 0.25);
-  else if (t < 0.5) c = color1.clone().lerp(color4, (t - 0.25) / 0.25);
-  else if (t < 0.75) c = color4.clone().lerp(color3, (t - 0.5) / 0.25);
-  else c = color3.clone().lerp(color2, (t - 0.75) / 0.25);
-
-  pColors[i * 3] = c.r;
-  pColors[i * 3 + 1] = c.g;
-  pColors[i * 3 + 2] = c.b;
+  scene.add(crystal);
+  const body = physics.addBody(crystal, {
+    damping: 0.94,
+    springForce: 0.015 + Math.random() * 0.02,
+    mass: 0.5 + Math.random() * 1.5,
+  });
+  crystals.push({ mesh: crystal, body });
 }
 
-pGeo.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
-pGeo.setAttribute('color', new THREE.BufferAttribute(pColors, 3));
+// ═══════════════════════════════════════
+// PARTICLE TRAIL (cursor-following)
+// ═══════════════════════════════════════
+const trailCount = 200;
+const trailGeo = new THREE.BufferGeometry();
+const trailPositions = new Float32Array(trailCount * 3);
+const trailSizes = new Float32Array(trailCount);
+const trailColors = new Float32Array(trailCount * 3);
 
-const pMat = new THREE.PointsMaterial({
-  size: 0.04,
+const trailPoints = [];
+for (let i = 0; i < trailCount; i++) {
+  trailPoints.push({
+    pos: new THREE.Vector3(0, 0, -50), // far away initially
+    life: 0,
+    maxLife: 0.6 + Math.random() * 1.5,
+    color: new THREE.Color().setHSL(0.65 + Math.random() * 0.25, 0.8, 0.5 + Math.random() * 0.4),
+  });
+}
+
+trailGeo.setAttribute('position', new THREE.BufferAttribute(trailPositions, 3));
+trailGeo.setAttribute('size', new THREE.BufferAttribute(trailSizes, 1));
+trailGeo.setAttribute('color', new THREE.BufferAttribute(trailColors, 3));
+
+// Custom trail texture (radial gradient via canvas)
+const trailCanvas = document.createElement('canvas');
+trailCanvas.width = 32;
+trailCanvas.height = 32;
+const tctx = trailCanvas.getContext('2d');
+const gradient = tctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+gradient.addColorStop(0, 'rgba(255,255,255,1)');
+gradient.addColorStop(0.15, 'rgba(255,200,255,0.8)');
+gradient.addColorStop(0.4, 'rgba(160,100,255,0.3)');
+gradient.addColorStop(1, 'rgba(0,0,0,0)');
+tctx.fillStyle = gradient;
+tctx.fillRect(0, 0, 32, 32);
+const trailTexture = new THREE.CanvasTexture(trailCanvas);
+
+const trailMat = new THREE.PointsMaterial({
+  size: 0.25,
+  map: trailTexture,
   vertexColors: true,
   blending: THREE.AdditiveBlending,
   depthWrite: false,
@@ -198,60 +278,31 @@ const pMat = new THREE.PointsMaterial({
   opacity: 0.8,
 });
 
-const nebula = new THREE.Points(pGeo, pMat);
-scene.add(nebula);
+const trailSystem = new THREE.Points(trailGeo, trailMat);
+scene.add(trailSystem);
 
-// ─────────────────────────────────────
-// FLOATING DIAMOND ACCENTS
-// ─────────────────────────────────────
-const accents = [];
-const octGeo = new THREE.OctahedronGeometry(0.12, 0);
+// Trail emission state
+let trailIndex = 0;
+const trailSpawnTimer = { value: 0 };
+const mouse3D = new THREE.Vector3();
+const raycaster = new THREE.Raycaster();
 
-for (let i = 0; i < 15; i++) {
-  const hue = 0.6 + Math.random() * 0.25;
-  const col = new THREE.Color().setHSL(hue, 0.7, 0.5 + Math.random() * 0.3);
-  const mat = new THREE.MeshStandardMaterial({
-    color: col,
-    emissive: col,
-    emissiveIntensity: 1.5,
-    metalness: 0.3,
-    roughness: 0.2,
-  });
-  const oct = new THREE.Mesh(octGeo, mat);
-  oct.position.set(
-    (Math.random() - 0.5) * 12,
-    (Math.random() - 0.5) * 8,
-    (Math.random() - 0.5) * 10 - 3
-  );
-  oct.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
-  oct.userData = {
-    baseY: oct.position.y,
-    speed: 0.2 + Math.random() * 0.6,
-    amp: 0.3 + Math.random() * 1.0,
-    phase: Math.random() * Math.PI * 2,
-    rotSpeed: 0.3 + Math.random() * 0.8,
-  };
-  scene.add(oct);
-  accents.push(oct);
-}
+// ═══════════════════════════════════════
+// RAYCASTING TARGETS
+// ═══════════════════════════════════════
+const hoverTargets = [mainMesh, ...crystals.map(c => c.mesh)];
+let hoveredObject = null;
 
-// ─────────────────────────────────────
-// GROUND GRID
-// ─────────────────────────────────────
-const gridHelper = new THREE.PolarGridHelper(8, 48, 32, 64, 0x334466, 0x223355);
-gridHelper.position.y = -4;
-scene.add(gridHelper);
-
-// ─────────────────────────────────────
-// CAMERA PATH KEYFRAMES
-// ─────────────────────────────────────
+// ═══════════════════════════════════════
+// SCROLL-DRIVEN CAMERA PATH
+// ═══════════════════════════════════════
 const keyframes = [
-  { s: 0.0,  pos: [0, 1.8, 8],    look: [0, 0, 0] },
-  { s: 0.2,  pos: [4, 2.2, 7.5],  look: [0, 0.5, 0] },
-  { s: 0.4,  pos: [-5, 3, 7],     look: [0, 0, 0] },
-  { s: 0.6,  pos: [3, -1, 5.5],   look: [1, 0, -2] },
-  { s: 0.8,  pos: [-3, -0.5, 6],  look: [-1, 0, 2] },
-  { s: 1.0,  pos: [0, 5, 14],     look: [0, 0, 0] },
+  { s: 0.0,  pos: [0, 1.5, 10],   look: [0, 0.2, 0] },
+  { s: 0.15, pos: [3.5, 2, 8.5],  look: [0, 0.3, 0] },
+  { s: 0.35, pos: [-4, 3, 8],     look: [0, -0.2, 0] },
+  { s: 0.55, pos: [2, -1.5, 6.5],  look: [0.5, 0, -2] },
+  { s: 0.75, pos: [-2.5, -0.5, 7], look: [-0.5, 0.2, 2] },
+  { s: 1.0,  pos: [0, 4, 15],     look: [0, 0, 0] },
 ];
 
 function getScrollFrac() {
@@ -259,7 +310,7 @@ function getScrollFrac() {
   return h > 0 ? window.scrollY / h : 0;
 }
 
-function lerpKf(frac) {
+function lerpKeyframes(frac) {
   const k = keyframes;
   if (frac <= k[0].s) return k[0];
   if (frac >= k[k.length - 1].s) return k[k.length - 1];
@@ -273,110 +324,210 @@ function lerpKf(frac) {
   };
 }
 
-// ─────────────────────────────────────
-// MOUSE
-// ─────────────────────────────────────
-const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
+// ═══════════════════════════════════════
+// MOUSE STATE
+// ═══════════════════════════════════════
+const mouse = { x: 0, y: 0, tx: 0, ty: 0, sx: 0, sy: 0 };
 document.addEventListener('mousemove', e => {
   mouse.tx = (e.clientX / window.innerWidth) * 2 - 1;
   mouse.ty = -(e.clientY / window.innerHeight) * 2 + 1;
 });
 
-// ─────────────────────────────────────
+// ═══════════════════════════════════════
+// PROJECT CARD HOVER BOOST
+// ═══════════════════════════════════════
+document.querySelectorAll('.project-card').forEach(card => {
+  card.addEventListener('mouseenter', () => {
+    bloomPass.strength = 1.6;
+    postFX.uniforms.uIntensity.value = 1.0;
+  });
+  card.addEventListener('mouseleave', () => {
+    bloomPass.strength = 0.9;
+    postFX.uniforms.uIntensity.value = 0.0;
+  });
+});
+
+// ═══════════════════════════════════════
 // ANIMATION LOOP
-// ─────────────────────────────────────
+// ═══════════════════════════════════════
 const clock = new THREE.Clock();
 const camTarget = new THREE.Vector3();
-const camLook = new THREE.Vector3();
+const camLookAt = new THREE.Vector3();
 const curLook = new THREE.Vector3();
+const worldMouse = new THREE.Vector3();
 
 function animate() {
-  const dt = Math.min(clock.getDelta(), 0.1);
+  const rawDt = clock.getDelta();
+  const dt = Math.min(rawDt, 0.1);
   const time = performance.now() * 0.001;
 
-  // Smooth mouse
-  mouse.x += (mouse.tx - mouse.x) * 2.5 * dt;
-  mouse.y += (mouse.ty - mouse.y) * 2.5 * dt;
+  // ── Smooth mouse ──
+  mouse.x += (mouse.tx - mouse.x) * 3.5 * dt;
+  mouse.y += (mouse.ty - mouse.y) * 3.5 * dt;
+  mouse.sx += (mouse.tx - mouse.sx) * 1.5 * dt;  // slower for background
+  mouse.sy += (mouse.ty - mouse.sy) * 1.5 * dt;
 
-  // Scroll → camera
-  const kf = lerpKf(getScrollFrac());
+  const sf = getScrollFrac();
+
+  // ── Background shader uniforms ──
+  cosmicBg.uniforms.uTime.value = time;
+  cosmicBg.uniforms.uMouse.value.set(mouse.sx * 0.5, mouse.sy * 0.5);
+  cosmicBg.uniforms.uScroll.value = sf;
+
+  // ── Post FX ──
+  postFX.uniforms.uTime.value = time;
+
+  // ── Camera ──
+  const kf = lerpKeyframes(sf);
   camTarget.set(kf.pos[0], kf.pos[1], kf.pos[2]);
-  camLook.set(kf.look[0] + mouse.x * 0.6, kf.look[1] + mouse.y * 0.4, kf.look[2]);
-
-  camera.position.lerp(camTarget, 1.2 * dt);
-  curLook.lerp(camLook, 2.0 * dt);
+  camLookAt.set(
+    kf.look[0] + mouse.x * 0.8,
+    kf.look[1] + mouse.y * 0.6,
+    kf.look[2]
+  );
+  camera.position.lerp(camTarget, 1.5 * dt);
+  curLook.lerp(camLookAt, 2.5 * dt);
   camera.lookAt(curLook);
 
-  // Animate core
-  core.rotation.y += dt * 0.25;
-  core.rotation.x += dt * 0.1;
-  shell.rotation.y -= dt * 0.2;
-  shell.rotation.x += dt * 0.15;
-  outerShell.rotation.y += dt * 0.12;
-  outerShell.rotation.z -= dt * 0.08;
+  // ── Morphing geometry ──
+  mainMesh.rotation.y += dt * 0.2;
+  mainMesh.rotation.x += dt * 0.08;
+  wireOverlay.rotation.copy(mainMesh.rotation);
 
-  // Rings
-  ring.rotation.z += dt * 0.35;
-  ring2.rotation.z -= dt * 0.28;
-  ring2.rotation.x += dt * 0.15;
+  // Scale pulse
+  const pulse = 1 + Math.sin(time * 1.5) * 0.03 + Math.cos(time * 2.3) * 0.02;
+  mainMesh.scale.setScalar(pulse);
+  wireOverlay.scale.setScalar(pulse);
 
-  // Orbit group
-  orbitGroup.rotation.y += dt * 0.08;
+  // Scroll transforms geometry
+  morphGroup.position.y = Math.sin(sf * Math.PI) * 0.5;
+  morphGroup.rotation.z = sf * 0.3;
 
-  // Individual orbs
-  orbData.forEach(orb => {
-    const cfg = orb.userData;
-    const a = time * cfg.speed + cfg.phase;
-    orb.position.x = Math.cos(a) * cfg.radius;
-    orb.position.z = Math.sin(a) * cfg.radius;
-    orb.position.y = Math.sin(a * 0.7) * cfg.radius * Math.sin(cfg.tilt);
+  // Shimmer uniforms
+  shimmerMat.uniforms.uTime.value = time;
+  shimmerMat.uniforms.uScroll.value = sf;
+  shimmerMat.uniforms.uColor.value.setHSL(0.72 + sf * 0.1, 0.7, 0.55);
+
+  // ── Energy rings ──
+  rings.forEach(ring => {
+    ring.rotation.z += dt * ring.userData.speed;
+    ring.material.uniforms.uTime.value = time;
+    ring.material.uniforms.uIntensity.value = 0.8 + Math.sin(time * 2) * 0.2;
   });
 
-  // Nebula drift
-  nebula.rotation.y += dt * 0.025;
-  nebula.rotation.x += dt * 0.012;
+  // ── Physics step ──
+  physics.step(dt);
 
-  // Floating accents
-  accents.forEach(oct => {
-    const u = oct.userData;
-    oct.position.y = u.baseY + Math.sin(time * u.speed + u.phase) * u.amp;
-    oct.rotation.x += dt * u.rotSpeed * 0.5;
-    oct.rotation.y += dt * u.rotSpeed * 0.6;
+  // ── Cursor attraction/repulsion on crystals ──
+  // Project mouse to 3D plane at z=0
+  const mouseNDC = new THREE.Vector2(mouse.x, mouse.y);
+  raycaster.setFromCamera(mouseNDC, camera);
+  const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+  raycaster.ray.intersectPlane(plane, mouse3D);
+
+  if (mouse3D) {
+    physics.repulseAll(mouse3D, 0.08, 1.5);
+    physics.attractAll(mouse3D, 0.002, 6.0);
+  }
+
+  // ── Raycasting for hover ──
+  raycaster.setFromCamera(new THREE.Vector2(mouse.x, mouse.y), camera);
+  const intersects = raycaster.intersectObjects(hoverTargets, false);
+
+  if (intersects.length > 0) {
+    const obj = intersects[0].object;
+    if (hoveredObject !== obj) {
+      // Reset previous
+      if (hoveredObject && hoveredObject.material.emissiveIntensity !== undefined) {
+        hoveredObject.material.emissiveIntensity = hoveredObject.userData._baseEmissive ?? 1.2;
+      }
+      hoveredObject = obj;
+      // Store and boost
+      if (obj.material.emissiveIntensity !== undefined) {
+        obj.userData._baseEmissive ??= obj.material.emissiveIntensity;
+        obj.material.emissiveIntensity = 3.0;
+      }
+    }
+  } else if (hoveredObject) {
+    if (hoveredObject.material.emissiveIntensity !== undefined) {
+      hoveredObject.material.emissiveIntensity = hoveredObject.userData._baseEmissive ?? 1.2;
+    }
+    hoveredObject = null;
+  }
+
+  // ── Crystal rotation ──
+  crystals.forEach(c => {
+    const u = c.mesh.userData.rotSpeed;
+    c.mesh.rotation.x += dt * u.x;
+    c.mesh.rotation.y += dt * u.y;
+    c.mesh.rotation.z += dt * u.z;
   });
 
-  // Mouse influences core
-  core.position.lerp(new THREE.Vector3(mouse.x * 0.4, mouse.y * 0.3, 0), 0.8 * dt);
-  shell.position.copy(core.position);
-  ring.position.copy(core.position);
-  ring2.position.copy(core.position);
+  // ── Particle trail ──
+  trailSpawnTimer.value += dt;
+  if (trailSpawnTimer.value > 0.03 && mouse3D) {
+    trailSpawnTimer.value = 0;
 
-  // Bloom varies subtly with scroll
-  const sf = getScrollFrac();
-  bloomPass.strength = 1.0 + sf * 0.5;
+    // Spawn at mouse 3D position with jitter
+    const spawnPos = mouse3D.clone().add(
+      new THREE.Vector3(
+        (Math.random() - 0.5) * 0.3,
+        (Math.random() - 0.5) * 0.3,
+        (Math.random() - 0.5) * 0.3
+      )
+    );
 
+    const pt = trailPoints[trailIndex];
+    pt.pos.copy(spawnPos);
+    pt.life = pt.maxLife;
+
+    trailIndex = (trailIndex + 1) % trailCount;
+  }
+
+  // Update trail particles
+  for (let i = 0; i < trailCount; i++) {
+    const pt = trailPoints[i];
+    pt.life -= dt;
+    if (pt.life < 0) pt.life = 0;
+
+    const alpha = pt.life / pt.maxLife;
+
+    // Float upward and outward
+    pt.pos.y += dt * 0.15;
+    pt.pos.x += (Math.sin(time * 3 + i) * dt * 0.1);
+    pt.pos.z += (Math.cos(time * 3 + i) * dt * 0.1);
+
+    trailPositions[i * 3] = pt.pos.x;
+    trailPositions[i * 3 + 1] = pt.pos.y;
+    trailPositions[i * 3 + 2] = pt.pos.z;
+    trailSizes[i] = alpha * 0.3;
+    trailColors[i * 3] = pt.color.r * alpha;
+    trailColors[i * 3 + 1] = pt.color.g * alpha;
+    trailColors[i * 3 + 2] = pt.color.b * alpha;
+  }
+
+  trailGeo.attributes.position.needsUpdate = true;
+  trailGeo.attributes.size.needsUpdate = true;
+  trailGeo.attributes.color.needsUpdate = true;
+
+  // ── Render ──
   composer.render();
   requestAnimationFrame(animate);
 }
 
-// ─────────────────────────────────────
+// ═══════════════════════════════════════
 // RESIZE
-// ─────────────────────────────────────
+// ═══════════════════════════════════════
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
   composer.setSize(window.innerWidth, window.innerHeight);
+  cosmicBg.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+  postFX.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
 });
 
-// ─────────────────────────────────────
-// PROJECT HOVER → BLOOM BOOST
-// ─────────────────────────────────────
-document.querySelectorAll('.project-card').forEach(card => {
-  card.addEventListener('mouseenter', () => { bloomPass.strength = 2.0; });
-  card.addEventListener('mouseleave', () => { bloomPass.strength = 1.2; });
-});
-
-// ─────────────────────────────────────
+// ═══════════════════════════════════════
 // GO
-// ─────────────────────────────────────
+// ═══════════════════════════════════════
 animate();
